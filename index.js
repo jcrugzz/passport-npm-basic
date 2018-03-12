@@ -1,11 +1,28 @@
+const crypto = require('crypto');
 
 exports.createPassportOptions = function createPassportOptions(options) {
-  const auth = options.auth || {};
+  options = options || {};
+  const auth = options.auth;
+  const lookup = typeof options.lookup === 'function'
+    ? options.lookup
+    : null;
+
+  if (!auth && !lookup) {
+    throw new Error('auth or lookup option must be passed in')
+  }
 
   const authenticate = (data, done) => {
     const name = data.name;
-    if (name === auth.user
-      && data.password === auth.password) return done(null, { name });
+
+    if (lookup) {
+      return lookup(data, (err) => {
+        if (err) return done(err);
+        return done(null, { name });
+      });
+    }
+
+    if (compare(name, auth.user)
+      && compare(data.password, auth.password)) return done(null, { name });
 
     const err = new Error('Invalid Login')
     err.status = 401;
@@ -36,7 +53,7 @@ exports.createPassportOptions = function createPassportOptions(options) {
       authenticate({
         req,
         name,
-        password: password
+        password
       }, done);
     }
     catch (deserializeError) {
@@ -50,3 +67,11 @@ exports.createPassportOptions = function createPassportOptions(options) {
     deserializeNPMToken
   };
 };
+
+function compare(a, b) {
+  try {
+    return crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b))
+  } catch(ex) {
+    return false;
+  }
+}
