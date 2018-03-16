@@ -9,7 +9,8 @@ A simple `basic-auth` handler for `passport-npm`.
     compare for basic auth.
 -   `options.lookup` - a function that accepts an object with `name` and
     `password` properties and a continuation function as parameters
-    and should return an error to the continuation function if the given
-    `name` and `password` do not match.
+    and should return an error or false as a result to the continuation function if the given
+    `name` and `password` are not valid, otherwise the result should be set
+    explicitly to true
 
 
