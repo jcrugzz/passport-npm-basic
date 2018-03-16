@@ -24,8 +24,8 @@ exports.createPassportOptions = function createPassportOptions(options) {
       // Handle errors or a false for whether it is authenticated
       return lookup(data, (err, res) => {
         if (err) return done(err);
-        if (res) return done(null, { name })
-        done(fourOhOne());
+        if (!res) return done(fourOhOne());
+        done(null, { name })
       });
     }
 
