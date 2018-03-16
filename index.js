@@ -11,22 +11,28 @@ exports.createPassportOptions = function createPassportOptions(options) {
     throw new Error('auth or lookup option must be passed in')
   }
 
+  function fourOhOne() {
+    const err = new Error('Invalid Login')
+    err.status = 401;
+    return err;
+  }
+
   const authenticate = (data, done) => {
     const name = data.name;
 
     if (lookup) {
-      return lookup(data, (err) => {
+      // Handle errors or a false for whether it is authenticated
+      return lookup(data, (err, res) => {
         if (err) return done(err);
-        return done(null, { name });
+        if (res) return done(null, { name })
+        done(fourOhOne());
       });
     }
 
     if (compare(name, auth.user)
       && compare(data.password, auth.password)) return done(null, { name });
 
-    const err = new Error('Invalid Login')
-    err.status = 401;
-    done(err);
+    done(fourOhOne());
   };
 
   const serializeNPMToken = (data, done) => {
